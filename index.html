@@ -2,57 +2,191 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Bitácora de Juntas y Vendedores</title>
+    <title>Panel de Seguimiento</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
     <style>
-        :root { --pendiente: #e67e22; --listo: #27ae60; --azul: #2980b9; }
-        body { font-family: 'Segoe UI', Arial, sans-serif; background: #f4f7f9; margin: 0; padding: 20px; }
-        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; border-bottom: 3px solid var(--azul); padding-bottom: 10px; }
-        h1 { margin: 0; color: #2c3e50; font-size: 1.5rem; }
-        .btn-refresh { background: var(--azul); color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold; }
-        .btn-refresh:hover { background: #1a5a80; }
-        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }
-        .card { background: white; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); overflow: hidden; }
-        .card-header { background: var(--azul); color: white; padding: 12px; text-align: center; font-weight: bold; text-transform: uppercase; font-size: 0.9rem; }
-        .content { padding: 15px; min-height: 100px; }
-        .task { border-bottom: 1px solid #eee; padding: 10px 0; display: flex; flex-direction: column; }
-        .task:last-child { border-bottom: none; }
-        .task-name { font-weight: 500; color: #333; margin-bottom: 5px; }
-        .status-badge { display: inline-block; font-size: 0.7rem; padding: 3px 8px; border-radius: 10px; font-weight: bold; width: fit-content; }
-        .status-pendiente { background: #fff3e0; color: var(--pendiente); border: 1px solid var(--pendiente); }
-        .status-listo { background: #e8f5e9; color: var(--listo); border: 1px solid var(--listo); text-decoration: none !important; }
-        .is-done { text-decoration: line-through; color: #95a5a6 !important; }
+        :root {
+            --glass-bg: rgba(255, 255, 255, 0.7);
+            --glass-border: rgba(255, 255, 255, 0.3);
+            --primary: #4facfe;
+            --secondary: #00f2fe;
+            --listo: #2ecc71;
+            --pendiente: #f39c12;
+        }
+
+        body {
+            margin: 0;
+            padding: 40px 20px;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            background-attachment: fixed;
+            color: #2c3e50;
+        }
+
+        header {
+            max-width: 1200px;
+            margin: 0 auto 40px auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            border: 1px solid var(--glass-border);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 1.8rem;
+            letter-spacing: 1px;
+            font-weight: 800;
+            background: linear-gradient(to right, #2c3e50, #4b6cb7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .btn-refresh {
+            background: #2c3e50;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .btn-refresh:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+            background: #1a2a3a;
+        }
+
+        .grid {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 25px;
+        }
+
+        .card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(15px);
+            border-radius: 25px;
+            border: 1px solid var(--glass-border);
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.15);
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        .card-header {
+            padding: 20px;
+            text-align: center;
+            font-weight: 900;
+            font-size: 1.1rem;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+            color: #1a3a5a;
+        }
+
+        .content {
+            padding: 20px;
+            flex-grow: 1;
+        }
+
+        .task {
+            background: rgba(255, 255, 255, 0.4);
+            margin-bottom: 15px;
+            padding: 15px;
+            border-radius: 15px;
+            border: 1px solid rgba(255,255,255,0.5);
+            transition: all 0.2s ease;
+        }
+
+        .task:hover {
+            background: rgba(255, 255, 255, 0.6);
+        }
+
+        .task-name {
+            display: block;
+            font-size: 1rem;
+            line-height: 1.5;
+            margin-bottom: 10px;
+            word-wrap: break-word; /* Permite que textos largos se ajusten */
+            color: #2c3e50;
+        }
+
+        .status-badge {
+            display: inline-block;
+            font-size: 0.7rem;
+            padding: 5px 12px;
+            border-radius: 8px;
+            font-weight: 800;
+            text-transform: uppercase;
+        }
+
+        .status-pendiente {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-listo {
+            background: #d4edda;
+            color: #155724;
+            opacity: 0.8;
+        }
+
+        .is-done {
+            text-decoration: line-through;
+            opacity: 0.5;
+        }
+
+        #loading {
+            text-align: center;
+            color: white;
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-top: 50px;
+        }
     </style>
 </head>
 <body>
 
     <header>
-        <h1>📋 PANEL DE SEGUIMIENTO LUNES</h1>
-        <button class="btn-refresh" onclick="loadData()">🔄 Actualizar Datos</button>
+        <h1>PANEL DE SEGUIMIENTO</h1>
+        <button class="btn-refresh" onclick="loadData()">🔄 Sincronizar</button>
     </header>
 
-    <div id="loading" style="text-align:center; padding: 50px;">Cargando pendientes...</div>
+    <div id="loading">Cargando bitácora maestra...</div>
     <div class="grid" id="mainGrid"></div>
 
     <script>
         const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTsePMc9flpt7FS7INMvVH4drQZAlpG96AqFOV7iQ0q2WO7g1H28MBM2SDkUN31gmY5agCDP4VoZrwx/pub?gid=0&single=true&output=csv';
 
-        // Mapeo exacto de tus columnas
         const estructura = [
-            { t: "JUNTAS SEMANALES", s: "ESTATUS1" },
-            { t: "TULANCINGO", s: "ESTATUS2" },
-            { t: "CECI P.", s: "ESTATUS3" },
-            { t: "ENRIQUE R.", s: "ESTATUS4" },
-            { t: "OSCAR F.", s: "ESTATUS5" },
-            { t: "CELENE S.", s: "ESTATUS6" }
+            { t: "JUNTAS SEMANALES", s: "ESTATUS1", icon: "🗓️" },
+            { t: "TULANCINGO", s: "ESTATUS2", icon: "📍" },
+            { t: "CECI P.", s: "ESTATUS3", icon: "👤" },
+            { t: "ENRIQUE R.", s: "ESTATUS4", icon: "👤" },
+            { t: "OSCAR F.", s: "ESTATUS5", icon: "👤" },
+            { t: "CELENE S.", s: "ESTATUS6", icon: "👤" }
         ];
 
         function loadData() {
-            document.getElementById('mainGrid').innerHTML = "";
-            document.getElementById('loading').style.display = "block";
+            const grid = document.getElementById('mainGrid');
+            const loader = document.getElementById('loading');
+            grid.innerHTML = "";
+            loader.style.display = "block";
             
-            // Añadimos un timestamp para evitar que el navegador guarde una copia vieja (cache)
-            const fetchUrl = csvUrl + "&cachebust=" + new Date().getTime();
+            const fetchUrl = csvUrl + "&cb=" + new Date().getTime();
 
             Papa.parse(fetchUrl, {
                 download: true,
@@ -60,7 +194,7 @@
                 skipEmptyLines: true,
                 complete: function(results) {
                     render(results.data);
-                    document.getElementById('loading').style.display = "none";
+                    loader.style.display = "none";
                 }
             });
         }
@@ -71,7 +205,7 @@
             estructura.forEach(col => {
                 let card = document.createElement('div');
                 card.className = 'card';
-                card.innerHTML = `<div class="card-header">${col.t}</div>`;
+                card.innerHTML = `<div class="card-header">${col.icon} ${col.t}</div>`;
                 
                 let content = document.createElement('div');
                 content.className = 'content';
@@ -79,7 +213,6 @@
                 let hasData = false;
 
                 data.forEach(row => {
-                    // Limpiar nombres de columnas de espacios invisibles
                     const rowClean = {};
                     Object.keys(row).forEach(k => rowClean[k.trim().toUpperCase()] = row[k]);
 
@@ -89,22 +222,21 @@
 
                     if (tarea && tarea.trim().length > 0) {
                         hasData = true;
-                        // Lista de palabras que significan "LISTO"
-                        const terminosExito = ["LISTO", "OK", "CUMPLIDO", "HECHO", "TERMINADO", "X"];
-                        let isDone = terminosExito.includes(estatus);
+                        const okTerms = ["LISTO", "OK", "CUMPLIDO", "HECHO", "TERMINADO", "X"];
+                        let isDone = okTerms.includes(estatus);
 
                         content.innerHTML += `
                             <div class="task">
                                 <span class="task-name ${isDone ? 'is-done' : ''}">${tarea}</span>
                                 <span class="status-badge ${isDone ? 'status-listo' : 'status-pendiente'}">
-                                    ${isDone ? '✓ ' + estatus : '⏳ PENDIENTE'}
+                                    ${isDone ? '✓ ' + (estatus || 'TERMINADO') : '⏳ PENDIENTE'}
                                 </span>
                             </div>
                         `;
                     }
                 });
 
-                if (!hasData) content.innerHTML = `<p style="color:#ccc; text-align:center; font-size:0.8rem;">Sin pendientes</p>`;
+                if (!hasData) content.innerHTML = `<p style="color:rgba(0,0,0,0.3); text-align:center; font-size:0.8rem; padding-top:20px;">Sin tareas registradas</p>`;
                 
                 card.appendChild(content);
                 grid.appendChild(card);
