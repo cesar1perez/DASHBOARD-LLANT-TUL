@@ -3,159 +3,129 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Panel de Seguimiento PRO</title>
+    <title>Panel PRO - Gestión de Bitácora</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
     <style>
         :root {
             --primary: #1a2a6c;
-            --glass: rgba(255, 255, 255, 0.85);
-            --border: rgba(255, 255, 255, 0.4);
+            --glass: rgba(255, 255, 255, 0.9);
             --success: #2d6a4f;
             --pending: #b57c00;
         }
 
         body {
-            margin: 0;
-            padding: 20px;
-            font-family: 'Segoe UI', system-ui, sans-serif;
+            margin: 0; padding: 20px;
+            font-family: 'Segoe UI', sans-serif;
             background: linear-gradient(135deg, #cfd9df 0%, #e2ebf0 100%);
             background-attachment: fixed;
-            color: #2c3e50;
         }
 
         .main-container { max-width: 1400px; margin: 0 auto; }
 
-        /* HEADER GLASS 3D */
         header {
-            background: rgba(26, 42, 108, 0.9);
+            background: var(--primary);
             backdrop-filter: blur(15px);
-            padding: 20px 30px;
-            border-radius: 20px;
-            margin-bottom: 30px;
+            padding: 15px 25px;
+            border-radius: 15px;
+            margin-bottom: 25px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border: 1px solid rgba(255,255,255,0.2);
-            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
             color: white;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
         }
 
-        h1 { margin: 0; font-size: 1.3rem; letter-spacing: 2px; font-weight: 800; }
+        h1 { margin: 0; font-size: 1.1rem; letter-spacing: 1px; }
 
         .btn-sync {
-            background: white;
-            color: var(--primary);
-            border: none;
-            padding: 10px 20px;
-            border-radius: 12px;
-            font-weight: 800;
-            cursor: pointer;
-            transition: 0.3s;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            background: white; color: var(--primary); border: none;
+            padding: 8px 15px; border-radius: 8px; font-weight: bold; cursor: pointer;
         }
 
-        .btn-sync:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0,0,0,0.2); }
-
-        /* GRID RESPONSIVE */
         .grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-            gap: 25px;
+            grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+            gap: 20px;
         }
 
-        /* CARD GLASS 3D */
+        /* TARJETA CON PESTAÑAS */
         .card {
             background: var(--glass);
-            backdrop-filter: blur(10px);
-            border-radius: 24px;
-            border: 1px solid var(--border);
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1), inset 0 0 0 1px rgba(255,255,255,0.5);
-            transition: all 0.3s ease;
+            border-radius: 20px;
+            border: 1px solid rgba(255,255,255,0.4);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            overflow: hidden;
             display: flex;
             flex-direction: column;
-            overflow: hidden;
         }
-
-        .card:hover { transform: translateY(-10px); box-shadow: 0 30px 60px rgba(0,0,0,0.15); }
 
         .card-header {
-            background: rgba(255, 255, 255, 0.5);
-            padding: 18px;
-            font-weight: 800;
-            text-align: center;
-            color: var(--primary);
-            font-size: 1rem;
-            border-bottom: 1px solid rgba(0,0,0,0.05);
-            text-transform: uppercase;
-        }
-
-        .content { padding: 20px; }
-
-        /* TAREAS CON PROFUNDIDAD */
-        .task {
-            background: white;
+            background: rgba(255,255,255,0.5);
             padding: 15px;
-            border-radius: 18px;
-            margin-bottom: 15px;
-            border-left: 6px solid var(--pending);
-            box-shadow: 0 4px 10px rgba(0,0,0,0.03);
-            transition: 0.2s;
+            text-align: center;
+            font-weight: 800;
+            color: var(--primary);
+            border-bottom: 1px solid rgba(0,0,0,0.05);
         }
 
-        .task.done {
-            border-left-color: var(--success);
-            background: rgba(240, 255, 244, 0.7);
-            opacity: 0.8;
+        /* Selector de Pestañas */
+        .tab-bar {
+            display: flex;
+            background: rgba(0,0,0,0.03);
+            border-bottom: 1px solid rgba(0,0,0,0.05);
         }
 
-        .task-text {
-            display: block;
-            font-size: 1rem;
-            font-weight: 600;
-            margin-bottom: 10px;
-            color: #34495e;
-            word-wrap: break-word;
+        .tab-btn {
+            flex: 1; padding: 10px; border: none; background: none;
+            cursor: pointer; font-size: 0.75rem; font-weight: bold;
+            color: #7f8c8d; transition: 0.3s;
         }
 
+        .tab-btn.active {
+            color: var(--primary);
+            background: white;
+            border-bottom: 3px solid var(--primary);
+        }
+
+        .content { padding: 15px; min-height: 150px; max-height: 400px; overflow-y: auto; }
+
+        .task {
+            background: white; padding: 12px; border-radius: 12px;
+            margin-bottom: 10px; border-left: 5px solid var(--pending);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+
+        .task.done { border-left-color: var(--success); opacity: 0.8; }
+        .task-text { display: block; font-size: 0.9rem; font-weight: 500; margin-bottom: 5px; }
         .task.done .task-text { text-decoration: line-through; color: #95a5a6; }
 
-        .badge {
-            font-size: 0.7rem;
-            font-weight: 800;
-            padding: 4px 12px;
-            border-radius: 8px;
-            text-transform: uppercase;
-        }
-
+        .badge { font-size: 0.6rem; font-weight: 800; padding: 3px 8px; border-radius: 5px; text-transform: uppercase; }
         .badge-pending { background: #fff4e5; color: #b57c00; }
         .badge-done { background: #e6fffa; color: #2d6a4f; }
 
-        /* MOBILE ADJUSTMENTS */
         @media (max-width: 600px) {
-            header { flex-direction: column; gap: 15px; padding: 20px; }
             .grid { grid-template-columns: 1fr; }
-            body { padding: 10px; }
+            header { flex-direction: column; gap: 10px; }
         }
 
-        #loader { text-align: center; padding: 100px; font-weight: bold; color: var(--primary); }
+        #loader { text-align: center; padding: 50px; font-weight: bold; color: var(--primary); }
     </style>
 </head>
 <body>
 
     <div class="main-container">
         <header>
-            <h1>PANEL DE SEGUIMIENTO</h1>
-            <button class="btn-sync" onclick="loadData()">🔄 SINCRONIZAR</button>
+            <h1>PANEL DE SEGUIMIENTO ESTRATÉGICO</h1>
+            <button class="btn-sync" onclick="loadData()">🔄 ACTUALIZAR</button>
         </header>
 
-        <div id="loader">Cargando tablero...</div>
+        <div id="loader">Sincronizando bitácora...</div>
         <div class="grid" id="mainGrid"></div>
     </div>
 
     <script>
         const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTsePMc9flpt7FS7INMvVH4drQZAlpG96AqFOV7iQ0q2WO7g1H28MBM2SDkUN31gmY5agCDP4VoZrwx/pub?gid=0&single=true&output=csv';
 
-        // Estructura oficial (Incluyendo Lic. Lorena)
         const estructura = [
             { t: "JUNTAS SEMANALES", s: "ESTATUS1", icon: "📋" },
             { t: "TULANCINGO", s: "ESTATUS2", icon: "📍" },
@@ -167,18 +137,15 @@
         ];
 
         function loadData() {
-            const grid = document.getElementById('mainGrid');
-            const loader = document.getElementById('loader');
-            grid.innerHTML = "";
-            loader.style.display = "block";
+            document.getElementById('mainGrid').innerHTML = "";
+            document.getElementById('loader').style.display = "block";
             
             Papa.parse(csvUrl + "&cb=" + new Date().getTime(), {
-                download: true,
-                header: true,
-                skipEmptyLines: true,
+                download: true, header: true, skipEmptyLines: true,
                 complete: function(results) {
-                    render(results.data);
-                    loader.style.display = "none";
+                    // Invertimos los datos para que lo más nuevo salga primero
+                    render(results.data.reverse());
+                    document.getElementById('loader').style.display = "none";
                 }
             });
         }
@@ -186,15 +153,15 @@
         function render(data) {
             const grid = document.getElementById('mainGrid');
             
-            estructura.forEach(col => {
+            estructura.forEach((col, index) => {
+                const cardId = `card-${index}`;
                 let card = document.createElement('div');
                 card.className = 'card';
-                card.innerHTML = `<div class="card-header">${col.icon} ${col.t}</div>`;
                 
-                let content = document.createElement('div');
-                content.className = 'content';
-                
-                let hasData = false;
+                // Procesar tareas
+                let pendientesHTML = "";
+                let historialHTML = "";
+                let pCount = 0; let hCount = 0;
 
                 data.forEach(row => {
                     const rowClean = {};
@@ -204,26 +171,43 @@
                     let estatus = (rowClean[col.s.toUpperCase()] || "").trim().toUpperCase();
 
                     if (tarea && tarea.trim().length > 0) {
-                        hasData = true;
                         const okTerms = ["LISTO", "OK", "CUMPLIDO", "HECHO", "TERMINADO", "X"];
                         let isDone = okTerms.includes(estatus);
-
-                        content.innerHTML += `
+                        
+                        let itemHTML = `
                             <div class="task ${isDone ? 'done' : ''}">
                                 <span class="task-text">${tarea}</span>
                                 <span class="badge ${isDone ? 'badge-done' : 'badge-pending'}">
                                     ${isDone ? '✓ ' + (estatus || 'TERMINADO') : '⏳ PENDIENTE'}
                                 </span>
-                            </div>
-                        `;
+                            </div>`;
+
+                        if(isDone) { historialHTML += itemHTML; hCount++; }
+                        else { pendientesHTML += itemHTML; pCount++; }
                     }
                 });
 
-                if (!hasData) content.innerHTML = `<p style="color:#bdc3c7; text-align:center; font-size:0.8rem; padding:20px;">Sin pendientes</p>`;
+                card.innerHTML = `
+                    <div class="card-header">${col.icon} ${col.t}</div>
+                    <div class="tab-bar">
+                        <button class="tab-btn active" onclick="switchTab(this, '${cardId}-p')">PENDIENTES (${pCount})</button>
+                        <button class="tab-btn" onclick="switchTab(this, '${cardId}-h')">HISTORIAL (${hCount})</button>
+                    </div>
+                    <div id="${cardId}-p" class="content">${pendientesHTML || '<p style="color:#ccc;text-align:center;">Todo al día</p>'}</div>
+                    <div id="${cardId}-h" class="content" style="display:none;">${historialHTML || '<p style="color:#ccc;text-align:center;">Sin historial</p>'}</div>
+                `;
                 
-                card.appendChild(content);
                 grid.appendChild(card);
             });
+        }
+
+        function switchTab(btn, contentId) {
+            const card = btn.closest('.card');
+            card.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            card.querySelectorAll('.content').forEach(c => c.style.display = 'none');
+            
+            btn.classList.add('active');
+            document.getElementById(contentId).style.display = 'block';
         }
 
         window.onload = loadData;
