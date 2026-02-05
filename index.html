@@ -3,174 +3,167 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Panel de Seguimiento</title>
+    <title>Panel de Seguimiento PRO</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
     <style>
         :root {
-            --bg-color: #f0f2f5;
-            --navy-blue: #1a2a6c;
-            --slate: #4a5568;
+            --primary: #1a2a6c;
+            --glass: rgba(255, 255, 255, 0.85);
+            --border: rgba(255, 255, 255, 0.4);
             --success: #2d6a4f;
-            --warning: #9e6400;
-            --white: rgba(255, 255, 255, 0.95);
+            --pending: #b57c00;
         }
 
         body {
             margin: 0;
-            padding: 10px;
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            background: #e2e8f0;
-            color: #2d3748;
-            line-height: 1.5;
+            padding: 20px;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: linear-gradient(135deg, #cfd9df 0%, #e2ebf0 100%);
+            background-attachment: fixed;
+            color: #2c3e50;
         }
 
-        /* Contenedor Principal */
-        .main-container {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
+        .main-container { max-width: 1400px; margin: 0 auto; }
 
+        /* HEADER GLASS 3D */
         header {
+            background: rgba(26, 42, 108, 0.9);
+            backdrop-filter: blur(15px);
+            padding: 20px 30px;
+            border-radius: 20px;
+            margin-bottom: 30px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            background: var(--navy-blue);
-            padding: 20px;
-            border-radius: 12px;
-            margin-bottom: 20px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
             color: white;
         }
 
-        h1 {
-            margin: 0;
-            font-size: 1.2rem;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
+        h1 { margin: 0; font-size: 1.3rem; letter-spacing: 2px; font-weight: 800; }
 
         .btn-sync {
-            background: #fff;
-            color: var(--navy-blue);
+            background: white;
+            color: var(--primary);
             border: none;
-            padding: 8px 16px;
-            border-radius: 6px;
+            padding: 10px 20px;
+            border-radius: 12px;
+            font-weight: 800;
             cursor: pointer;
-            font-weight: bold;
-            font-size: 0.8rem;
             transition: 0.3s;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
         }
 
-        .btn-sync:active { transform: scale(0.95); }
+        .btn-sync:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0,0,0,0.2); }
 
-        /* Grid Adaptable (Responsive) */
+        /* GRID RESPONSIVE */
         .grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-            gap: 15px;
+            gap: 25px;
         }
 
-        /* Tarjetas */
+        /* CARD GLASS 3D */
         .card {
-            background: var(--white);
-            border-radius: 12px;
-            border: 1px solid #cbd5e0;
+            background: var(--glass);
+            backdrop-filter: blur(10px);
+            border-radius: 24px;
+            border: 1px solid var(--border);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1), inset 0 0 0 1px rgba(255,255,255,0.5);
+            transition: all 0.3s ease;
             display: flex;
             flex-direction: column;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
             overflow: hidden;
         }
 
+        .card:hover { transform: translateY(-10px); box-shadow: 0 30px 60px rgba(0,0,0,0.15); }
+
         .card-header {
-            background: #edf2f7;
-            padding: 12px 15px;
-            font-weight: 700;
-            color: var(--navy-blue);
-            border-bottom: 2px solid #cbd5e0;
-            font-size: 0.9rem;
-            display: flex;
-            align-items: center;
-            gap: 10px;
+            background: rgba(255, 255, 255, 0.5);
+            padding: 18px;
+            font-weight: 800;
+            text-align: center;
+            color: var(--primary);
+            font-size: 1rem;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+            text-transform: uppercase;
         }
 
-        .content {
-            padding: 12px;
-        }
+        .content { padding: 20px; }
 
-        /* Estilo de las Tareas */
+        /* TAREAS CON PROFUNDIDAD */
         .task {
-            background: #ffffff;
-            margin-bottom: 12px;
-            padding: 12px;
-            border-radius: 8px;
-            border-left: 5px solid var(--warning);
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            background: white;
+            padding: 15px;
+            border-radius: 18px;
+            margin-bottom: 15px;
+            border-left: 6px solid var(--pending);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.03);
+            transition: 0.2s;
         }
 
         .task.done {
             border-left-color: var(--success);
-            background: #f8fafc;
-            opacity: 0.7;
+            background: rgba(240, 255, 244, 0.7);
+            opacity: 0.8;
         }
 
         .task-text {
             display: block;
-            font-size: 0.95rem;
-            color: #1a202c;
-            margin-bottom: 8px;
-            word-wrap: break-word; /* Crucial para celular */
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #34495e;
+            word-wrap: break-word;
         }
 
-        .task.done .task-text {
-            text-decoration: line-through;
-            color: #718096;
-        }
+        .task.done .task-text { text-decoration: line-through; color: #95a5a6; }
 
         .badge {
             font-size: 0.7rem;
-            font-weight: 700;
-            padding: 3px 8px;
-            border-radius: 4px;
+            font-weight: 800;
+            padding: 4px 12px;
+            border-radius: 8px;
             text-transform: uppercase;
-            display: inline-block;
         }
 
-        .badge-pending { background: #feebc8; color: #744210; }
-        .badge-done { background: #c6f6d5; color: #22543d; }
+        .badge-pending { background: #fff4e5; color: #b57c00; }
+        .badge-done { background: #e6fffa; color: #2d6a4f; }
 
-        /* Ajustes para Celular (Pantallas pequeñas) */
+        /* MOBILE ADJUSTMENTS */
         @media (max-width: 600px) {
-            header { flex-direction: column; gap: 10px; text-align: center; }
-            .grid { grid-template-columns: 1fr; } /* Una sola columna */
-            h1 { font-size: 1rem; }
-            body { padding: 5px; }
+            header { flex-direction: column; gap: 15px; padding: 20px; }
+            .grid { grid-template-columns: 1fr; }
+            body { padding: 10px; }
         }
 
-        #loader { text-align: center; padding: 40px; color: var(--navy-blue); font-weight: bold; }
+        #loader { text-align: center; padding: 100px; font-weight: bold; color: var(--primary); }
     </style>
 </head>
 <body>
 
     <div class="main-container">
         <header>
-            <h1>Panel de Seguimiento</h1>
+            <h1>PANEL DE SEGUIMIENTO</h1>
             <button class="btn-sync" onclick="loadData()">🔄 SINCRONIZAR</button>
         </header>
 
-        <div id="loader">Conectando con bitácora...</div>
+        <div id="loader">Cargando tablero...</div>
         <div class="grid" id="mainGrid"></div>
     </div>
 
     <script>
         const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTsePMc9flpt7FS7INMvVH4drQZAlpG96AqFOV7iQ0q2WO7g1H28MBM2SDkUN31gmY5agCDP4VoZrwx/pub?gid=0&single=true&output=csv';
 
+        // Estructura oficial (Incluyendo Lic. Lorena)
         const estructura = [
             { t: "JUNTAS SEMANALES", s: "ESTATUS1", icon: "📋" },
             { t: "TULANCINGO", s: "ESTATUS2", icon: "📍" },
             { t: "CECI P.", s: "ESTATUS3", icon: "👤" },
             { t: "ENRIQUE R.", s: "ESTATUS4", icon: "👤" },
             { t: "OSCAR F.", s: "ESTATUS5", icon: "👤" },
-            { t: "CELENE S.", s: "ESTATUS6", icon: "👤" }
+            { t: "CELENE S.", s: "ESTATUS6", icon: "👤" },
+            { t: "LIC. LORENA", s: "ESTATUS7", icon: "👩‍💼" }
         ];
 
         function loadData() {
@@ -179,10 +172,7 @@
             grid.innerHTML = "";
             loader.style.display = "block";
             
-            // Bypass de caché para ver cambios rápido
-            const fetchUrl = csvUrl + "&nocache=" + new Date().getTime();
-
-            Papa.parse(fetchUrl, {
+            Papa.parse(csvUrl + "&cb=" + new Date().getTime(), {
                 download: true,
                 header: true,
                 skipEmptyLines: true,
@@ -199,7 +189,7 @@
             estructura.forEach(col => {
                 let card = document.createElement('div');
                 card.className = 'card';
-                card.innerHTML = `<div class="card-header"><span>${col.icon}</span> ${col.t}</div>`;
+                card.innerHTML = `<div class="card-header">${col.icon} ${col.t}</div>`;
                 
                 let content = document.createElement('div');
                 content.className = 'content';
@@ -229,7 +219,7 @@
                     }
                 });
 
-                if (!hasData) content.innerHTML = `<p style="color:#a0aec0; text-align:center; font-size:0.8rem; padding:10px;">Sin pendientes</p>`;
+                if (!hasData) content.innerHTML = `<p style="color:#bdc3c7; text-align:center; font-size:0.8rem; padding:20px;">Sin pendientes</p>`;
                 
                 card.appendChild(content);
                 grid.appendChild(card);
