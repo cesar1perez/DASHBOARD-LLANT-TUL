@@ -2,177 +2,170 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Panel de Seguimiento</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
     <style>
         :root {
-            --glass-bg: rgba(255, 255, 255, 0.7);
-            --glass-border: rgba(255, 255, 255, 0.3);
-            --primary: #4facfe;
-            --secondary: #00f2fe;
-            --listo: #2ecc71;
-            --pendiente: #f39c12;
+            --bg-color: #f0f2f5;
+            --navy-blue: #1a2a6c;
+            --slate: #4a5568;
+            --success: #2d6a4f;
+            --warning: #9e6400;
+            --white: rgba(255, 255, 255, 0.95);
         }
 
         body {
             margin: 0;
-            padding: 40px 20px;
-            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-            background-attachment: fixed;
-            color: #2c3e50;
+            padding: 10px;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: #e2e8f0;
+            color: #2d3748;
+            line-height: 1.5;
+        }
+
+        /* Contenedor Principal */
+        .main-container {
+            max-width: 1200px;
+            margin: 0 auto;
         }
 
         header {
-            max-width: 1200px;
-            margin: 0 auto 40px auto;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            background: var(--navy-blue);
             padding: 20px;
-            background: var(--glass-bg);
-            backdrop-filter: blur(10px);
-            border-radius: 20px;
-            border: 1px solid var(--glass-border);
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            color: white;
         }
 
         h1 {
             margin: 0;
-            font-size: 1.8rem;
+            font-size: 1.2rem;
+            text-transform: uppercase;
             letter-spacing: 1px;
-            font-weight: 800;
-            background: linear-gradient(to right, #2c3e50, #4b6cb7);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
         }
 
-        .btn-refresh {
-            background: #2c3e50;
-            color: white;
+        .btn-sync {
+            background: #fff;
+            color: var(--navy-blue);
             border: none;
-            padding: 12px 25px;
-            border-radius: 12px;
+            padding: 8px 16px;
+            border-radius: 6px;
             cursor: pointer;
             font-weight: bold;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            font-size: 0.8rem;
+            transition: 0.3s;
         }
 
-        .btn-refresh:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(0,0,0,0.2);
-            background: #1a2a3a;
-        }
+        .btn-sync:active { transform: scale(0.95); }
 
+        /* Grid Adaptable (Responsive) */
         .grid {
-            max-width: 1400px;
-            margin: 0 auto;
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-            gap: 25px;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 15px;
         }
 
+        /* Tarjetas */
         .card {
-            background: var(--glass-bg);
-            backdrop-filter: blur(15px);
-            border-radius: 25px;
-            border: 1px solid var(--glass-border);
-            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.15);
+            background: var(--white);
+            border-radius: 12px;
+            border: 1px solid #cbd5e0;
             display: flex;
             flex-direction: column;
-            transition: transform 0.3s ease;
-        }
-
-        .card:hover {
-            transform: translateY(-5px);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            overflow: hidden;
         }
 
         .card-header {
-            padding: 20px;
-            text-align: center;
-            font-weight: 900;
-            font-size: 1.1rem;
-            border-bottom: 1px solid rgba(0,0,0,0.05);
-            color: #1a3a5a;
+            background: #edf2f7;
+            padding: 12px 15px;
+            font-weight: 700;
+            color: var(--navy-blue);
+            border-bottom: 2px solid #cbd5e0;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
 
         .content {
-            padding: 20px;
-            flex-grow: 1;
+            padding: 12px;
         }
 
+        /* Estilo de las Tareas */
         .task {
-            background: rgba(255, 255, 255, 0.4);
-            margin-bottom: 15px;
-            padding: 15px;
-            border-radius: 15px;
-            border: 1px solid rgba(255,255,255,0.5);
-            transition: all 0.2s ease;
-        }
-
-        .task:hover {
-            background: rgba(255, 255, 255, 0.6);
-        }
-
-        .task-name {
-            display: block;
-            font-size: 1rem;
-            line-height: 1.5;
-            margin-bottom: 10px;
-            word-wrap: break-word; /* Permite que textos largos se ajusten */
-            color: #2c3e50;
-        }
-
-        .status-badge {
-            display: inline-block;
-            font-size: 0.7rem;
-            padding: 5px 12px;
+            background: #ffffff;
+            margin-bottom: 12px;
+            padding: 12px;
             border-radius: 8px;
-            font-weight: 800;
-            text-transform: uppercase;
+            border-left: 5px solid var(--warning);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         }
 
-        .status-pendiente {
-            background: #fff3cd;
-            color: #856404;
+        .task.done {
+            border-left-color: var(--success);
+            background: #f8fafc;
+            opacity: 0.7;
         }
 
-        .status-listo {
-            background: #d4edda;
-            color: #155724;
-            opacity: 0.8;
+        .task-text {
+            display: block;
+            font-size: 0.95rem;
+            color: #1a202c;
+            margin-bottom: 8px;
+            word-wrap: break-word; /* Crucial para celular */
         }
 
-        .is-done {
+        .task.done .task-text {
             text-decoration: line-through;
-            opacity: 0.5;
+            color: #718096;
         }
 
-        #loading {
-            text-align: center;
-            color: white;
-            font-size: 1.2rem;
-            font-weight: bold;
-            margin-top: 50px;
+        .badge {
+            font-size: 0.7rem;
+            font-weight: 700;
+            padding: 3px 8px;
+            border-radius: 4px;
+            text-transform: uppercase;
+            display: inline-block;
         }
+
+        .badge-pending { background: #feebc8; color: #744210; }
+        .badge-done { background: #c6f6d5; color: #22543d; }
+
+        /* Ajustes para Celular (Pantallas pequeñas) */
+        @media (max-width: 600px) {
+            header { flex-direction: column; gap: 10px; text-align: center; }
+            .grid { grid-template-columns: 1fr; } /* Una sola columna */
+            h1 { font-size: 1rem; }
+            body { padding: 5px; }
+        }
+
+        #loader { text-align: center; padding: 40px; color: var(--navy-blue); font-weight: bold; }
     </style>
 </head>
 <body>
 
-    <header>
-        <h1>PANEL DE SEGUIMIENTO</h1>
-        <button class="btn-refresh" onclick="loadData()">🔄 Sincronizar</button>
-    </header>
+    <div class="main-container">
+        <header>
+            <h1>Panel de Seguimiento</h1>
+            <button class="btn-sync" onclick="loadData()">🔄 SINCRONIZAR</button>
+        </header>
 
-    <div id="loading">Cargando bitácora maestra...</div>
-    <div class="grid" id="mainGrid"></div>
+        <div id="loader">Conectando con bitácora...</div>
+        <div class="grid" id="mainGrid"></div>
+    </div>
 
     <script>
         const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTsePMc9flpt7FS7INMvVH4drQZAlpG96AqFOV7iQ0q2WO7g1H28MBM2SDkUN31gmY5agCDP4VoZrwx/pub?gid=0&single=true&output=csv';
 
         const estructura = [
-            { t: "JUNTAS SEMANALES", s: "ESTATUS1", icon: "🗓️" },
+            { t: "JUNTAS SEMANALES", s: "ESTATUS1", icon: "📋" },
             { t: "TULANCINGO", s: "ESTATUS2", icon: "📍" },
             { t: "CECI P.", s: "ESTATUS3", icon: "👤" },
             { t: "ENRIQUE R.", s: "ESTATUS4", icon: "👤" },
@@ -182,11 +175,12 @@
 
         function loadData() {
             const grid = document.getElementById('mainGrid');
-            const loader = document.getElementById('loading');
+            const loader = document.getElementById('loader');
             grid.innerHTML = "";
             loader.style.display = "block";
             
-            const fetchUrl = csvUrl + "&cb=" + new Date().getTime();
+            // Bypass de caché para ver cambios rápido
+            const fetchUrl = csvUrl + "&nocache=" + new Date().getTime();
 
             Papa.parse(fetchUrl, {
                 download: true,
@@ -205,7 +199,7 @@
             estructura.forEach(col => {
                 let card = document.createElement('div');
                 card.className = 'card';
-                card.innerHTML = `<div class="card-header">${col.icon} ${col.t}</div>`;
+                card.innerHTML = `<div class="card-header"><span>${col.icon}</span> ${col.t}</div>`;
                 
                 let content = document.createElement('div');
                 content.className = 'content';
@@ -217,8 +211,7 @@
                     Object.keys(row).forEach(k => rowClean[k.trim().toUpperCase()] = row[k]);
 
                     let tarea = rowClean[col.t.toUpperCase()];
-                    let rawStatus = rowClean[col.s.toUpperCase()] || "";
-                    let estatus = rawStatus.trim().toUpperCase();
+                    let estatus = (rowClean[col.s.toUpperCase()] || "").trim().toUpperCase();
 
                     if (tarea && tarea.trim().length > 0) {
                         hasData = true;
@@ -226,9 +219,9 @@
                         let isDone = okTerms.includes(estatus);
 
                         content.innerHTML += `
-                            <div class="task">
-                                <span class="task-name ${isDone ? 'is-done' : ''}">${tarea}</span>
-                                <span class="status-badge ${isDone ? 'status-listo' : 'status-pendiente'}">
+                            <div class="task ${isDone ? 'done' : ''}">
+                                <span class="task-text">${tarea}</span>
+                                <span class="badge ${isDone ? 'badge-done' : 'badge-pending'}">
                                     ${isDone ? '✓ ' + (estatus || 'TERMINADO') : '⏳ PENDIENTE'}
                                 </span>
                             </div>
@@ -236,7 +229,7 @@
                     }
                 });
 
-                if (!hasData) content.innerHTML = `<p style="color:rgba(0,0,0,0.3); text-align:center; font-size:0.8rem; padding-top:20px;">Sin tareas registradas</p>`;
+                if (!hasData) content.innerHTML = `<p style="color:#a0aec0; text-align:center; font-size:0.8rem; padding:10px;">Sin pendientes</p>`;
                 
                 card.appendChild(content);
                 grid.appendChild(card);
