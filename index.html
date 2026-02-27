@@ -2,223 +2,276 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Panel de Seguimiento Estratégico</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>CRM ROAD MASTER - LLANTERAMA</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
     <style>
-        :root {
-            --primary: #1a2a6c;
-            --glass: rgba(255, 255, 255, 0.9);
-            --success: #2d6a4f;
-            --pending: #b57c00;
+        :root { --negro: #111111; --rojo: #e11d48; --gris: #334155; }
+        body { font-family: 'Arial Black', sans-serif; background: #000; color: white; overflow-x: hidden; }
+        
+        /* Home Estilo Road Master */
+        .home-container { height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; background: radial-gradient(circle, #222 0%, #000 100%); position: fixed; width: 100%; z-index: 1000; }
+        .logo-road { border: 5px solid var(--rojo); padding: 20px; border-radius: 10px; text-align: center; margin-bottom: 2rem; }
+        .logo-road h1 { font-size: 40px; font-style: italic; color: white; line-height: 0.8; }
+        .logo-road span { color: var(--rojo); font-size: 20px; letter-spacing: 5px; }
+        
+        .btn-main { background: white; border-bottom: 6px solid #999; padding: 18px; border-radius: 10px; width: 300px; display: flex; flex-direction: column; align-items: center; margin-bottom: 15px; transition: 0.1s; cursor: pointer; }
+        .btn-main:active { transform: translateY(4px); border-bottom-width: 2px; }
+        .btn-main span { color: #000; font-size: 14px; font-weight: 900; text-transform: uppercase; margin-top: 5px; }
+        .btn-main i { font-size: 28px; }
+
+        .view-section { display: none; min-height: 100vh; background: #f8fafc; color: #000; }
+        .active-view { display: block !important; }
+        .header-app { background: var(--negro); color: white; padding: 15px; display: flex; align-items: center; gap: 15px; border-bottom: 4px solid var(--rojo); position: sticky; top: 0; z-index: 500; }
+
+        /* Estilos Mapa y Listado */
+        .map-layout { display: flex; height: calc(100vh - 65px); position: relative; }
+        @media (max-width: 768px) {
+            .sidebar-map { position: absolute; bottom: 0; left: 0; width: 100%; height: 70%; z-index: 1000; transform: translateY(100%); transition: 0.4s; border-top: 5px solid var(--rojo); }
+            .sidebar-map.open { transform: translateY(0); }
+            .btn-toggle-list { display: block !important; }
         }
+        .sidebar-map { width: 320px; background: white; border-right: 4px solid #ddd; overflow-y: auto; }
+        #map { flex-grow: 1; z-index: 10; }
+        
+        .btn-toggle-list { display: none; position: absolute; top: 15px; left: 15px; z-index: 1100; background: var(--rojo); color: white; padding: 10px 20px; border-radius: 8px; font-weight: 900; font-size: 12px; }
 
-        body {
-            margin: 0; padding: 20px;
-            font-family: 'Segoe UI', sans-serif;
-            background: linear-gradient(135deg, #cfd9df 0%, #e2ebf0 100%);
-            background-attachment: fixed;
-        }
-
-        .main-container { max-width: 1600px; margin: 0 auto; }
-
-        header {
-            background: var(--primary);
-            backdrop-filter: blur(15px);
-            padding: 15px 25px;
-            border-radius: 15px;
-            margin-bottom: 25px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            color: white;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
-            border: 1px solid rgba(255,255,255,0.1);
-        }
-
-        h1 { margin: 0; font-size: 1.1rem; letter-spacing: 1px; font-weight: 800; }
-
-        .btn-sync {
-            background: white; color: var(--primary); border: none;
-            padding: 10px 18px; border-radius: 10px; font-weight: bold; 
-            cursor: pointer; transition: 0.3s;
-        }
-        .btn-sync:hover { background: #f0f0f0; transform: translateY(-2px); }
-
-        .grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-            gap: 20px;
-        }
-
-        .card {
-            background: var(--glass);
-            border-radius: 20px;
-            border: 1px solid rgba(255,255,255,0.4);
-            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            transition: transform 0.3s ease;
-        }
-
-        .card:hover { transform: translateY(-5px); }
-
-        .card-header {
-            background: rgba(255,255,255,0.6);
-            padding: 15px;
-            text-align: center;
-            font-weight: 800;
-            color: var(--primary);
-            border-bottom: 1px solid rgba(0,0,0,0.05);
-            text-transform: uppercase;
-            font-size: 0.9rem;
-        }
-
-        .tab-bar { display: flex; background: rgba(0,0,0,0.03); border-bottom: 1px solid rgba(0,0,0,0.05); }
-
-        .tab-btn {
-            flex: 1; padding: 12px; border: none; background: none;
-            cursor: pointer; font-size: 0.7rem; font-weight: bold;
-            color: #7f8c8d; transition: 0.3s;
-        }
-
-        .tab-btn.active {
-            color: var(--primary);
-            background: white;
-            border-bottom: 3px solid var(--primary);
-        }
-
-        .content { 
-            padding: 15px; 
-            min-height: 100px; 
-            max-height: 450px; 
-            overflow-y: auto; 
-            scrollbar-width: thin;
-        }
-
-        .task {
-            background: white; padding: 14px; border-radius: 14px;
-            margin-bottom: 12px; border-left: 5px solid var(--pending);
-            box-shadow: 0 4px 6px rgba(0,0,0,0.02);
-        }
-
-        .task.done { border-left-color: var(--success); background: #f8faf9; opacity: 0.8; }
-        .task-text { display: block; font-size: 0.95rem; font-weight: 500; margin-bottom: 8px; color: #333; line-height: 1.4; }
-        .task.done .task-text { text-decoration: line-through; color: #95a5a6; }
-
-        .badge { font-size: 0.65rem; font-weight: 800; padding: 4px 10px; border-radius: 6px; text-transform: uppercase; }
-        .badge-pending { background: #fff4e5; color: #b57c00; }
-        .badge-done { background: #e6fffa; color: #2d6a4f; }
-
-        @media (max-width: 600px) {
-            .grid { grid-template-columns: 1fr; }
-            header { flex-direction: column; gap: 15px; text-align: center; }
-            body { padding: 10px; }
-        }
-
-        #loader { text-align: center; padding: 100px; font-weight: bold; color: var(--primary); font-size: 1.2rem; }
+        /* Panel Detalles */
+        #detailPanel { position: fixed; top: 0; right: 0; height: 100%; width: 100%; max-width: 450px; background: white; z-index: 2000; transform: translateX(100%); transition: 0.4s; border-left: 8px solid var(--rojo); box-shadow: -10px 0 40px rgba(0,0,0,0.5); }
+        .panel-open { transform: translateX(0) !important; }
+        .field-card { border-bottom: 1px solid #eee; padding: 8px 0; }
+        .btn-google-maps { background: #4285F4; color: white; padding: 12px; border-radius: 8px; width: 100%; font-weight: 900; text-align: center; display: block; margin-bottom: 15px; }
     </style>
 </head>
 <body>
 
-    <div class="main-container">
-        <header>
-            <h1>PANEL DE SEGUIMIENTO ESTRATÉGICO</h1>
-            <button class="btn-sync" onclick="loadData()">🔄 SINCRONIZAR</button>
-        </header>
+    <section id="homeView" class="home-container">
+        <div class="logo-road">
+            <h1>ROAD MASTER</h1>
+            <span>TULANCINGO</span>
+        </div>
+        <button onclick="switchView('money')" class="btn-main"><i class="fas fa-chart-line text-red-600"></i><span>Bonos Road Master</span></button>
+        <button onclick="switchView('list')" class="btn-main"><i class="fas fa-truck-moving text-slate-700"></i><span>Base de Flotas</span></button>
+        <button onclick="switchView('map')" class="btn-main"><i class="fas fa-map-location-dot text-blue-600"></i><span>Mapa de Prospección</span></button>
+    </section>
 
-        <div id="loader">Conectando con la bitácora...</div>
-        <div class="grid" id="mainGrid"></div>
+    <section id="moneyView" class="view-section">
+        <div class="header-app">
+            <button onclick="switchView('home')" class="bg-rojo text-white px-4 py-2 rounded font-black text-xs">INICIO</button>
+            <span class="font-black italic uppercase">Bonos por Prospecto</span>
+        </div>
+        <div id="comisionesContainer" class="p-4 space-y-6"></div>
+    </section>
+
+    <section id="listView" class="view-section">
+        <div class="header-app">
+            <button onclick="switchView('home')" class="bg-rojo text-white px-4 py-2 rounded font-black text-xs">INICIO</button>
+            <span class="font-black italic uppercase">Base Road Master</span>
+        </div>
+        <div class="p-3">
+            <input type="text" id="searchInput" class="w-full p-4 border-2 border-slate-300 rounded-xl mb-4 font-bold" placeholder="🔍 Buscar flota, impulsor o zona..." onkeyup="filterTable()">
+            <div class="overflow-x-auto rounded-lg border-2 border-black">
+                <table class="w-full bg-white text-xs text-left">
+                    <thead class="bg-black text-white uppercase">
+                        <tr>
+                            <th class="p-3">Negocio / Razón Social</th>
+                            <th class="p-3">Impulsor</th>
+                            <th class="p-3">Zona</th>
+                            <th class="p-3">Interés</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <section id="mapView" class="view-section">
+        <div class="header-app">
+            <button onclick="switchView('home')" class="bg-rojo text-white px-4 py-2 rounded font-black text-xs">INICIO</button>
+            <span class="font-black italic">RUTAS ROAD MASTER</span>
+        </div>
+        <div class="map-layout">
+            <button class="btn-toggle-list" onclick="toggleMapList()"><i class="fas fa-list"></i> VER FLOTAS</button>
+            <div class="sidebar-map" id="mapListContainer"></div>
+            <div id="map"></div>
+        </div>
+    </section>
+
+    <div id="detailPanel">
+        <div class="p-6 h-full flex flex-col">
+            <div class="flex justify-between items-center border-b-4 border-black pb-2 mb-4">
+                <span class="font-black text-black italic text-xl uppercase">Ficha de Flota</span>
+                <button onclick="closeDetail()" class="text-4xl font-bold">×</button>
+            </div>
+            <div id="detailContent" class="overflow-y-auto flex-1"></div>
+        </div>
     </div>
 
     <script>
-        const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTsePMc9flpt7FS7INMvVH4drQZAlpG96AqFOV7iQ0q2WO7g1H28MBM2SDkUN31gmY5agCDP4VoZrwx/pub?gid=0&single=true&output=csv';
+        const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR6ZrqggPx2nGaG5dMm1Ip5ZsCEmkoaBK9HWUnDhJu2xVy_3L5PIuYkyrJEcvZBAywmAyFtyIsUt47J/pub?gid=2025930369&single=true&output=csv';
+        let allData = [], map, markersLayer;
 
-        // Estructura actualizada con Poza Rica
-        const estructura = [
-            { t: "JUNTAS SEMANALES", s: "ESTATUS1", icon: "📋" },
-            { t: "TULANCINGO", s: "ESTATUS2", icon: "📍" },
-            { t: "POZA RICA", s: "ESTATUS8", icon: "🌊" },
-            { t: "CECI P.", s: "ESTATUS3", icon: "👤" },
-            { t: "ENRIQUE R.", s: "ESTATUS4", icon: "👤" },
-            { t: "OSCAR F.", s: "ESTATUS5", icon: "👤" },
-            { t: "CELENE S.", s: "ESTATUS6", icon: "👤" },
-            { t: "LIC. LORENA", s: "ESTATUS7", icon: "👩‍💼" }
-        ];
+        function getVal(row, name) {
+            const key = Object.keys(row).find(k => k.toLowerCase().trim().includes(name.toLowerCase().trim()));
+            return key ? row[key].toString().trim() : "";
+        }
+
+        // Función GPS Corregida
+        function parseGPS(gpsStr) {
+            if(!gpsStr || !gpsStr.includes(',')) return null;
+            const parts = gpsStr.split(',');
+            const lat = parseFloat(parts[0].trim());
+            const lng = parseFloat(parts[1].trim());
+            return (isNaN(lat) || isNaN(lng)) ? null : [lat, lng];
+        }
+
+        function switchView(v) {
+            document.getElementById('homeView').style.display = (v === 'home') ? 'flex' : 'none';
+            document.querySelectorAll('.view-section').forEach(s => s.classList.remove('active-view'));
+            if(v !== 'home') document.getElementById(v + 'View').classList.add('active-view');
+            if(v === 'map') { if(!map) initMap(); setTimeout(() => map.invalidateSize(), 300); }
+        }
+
+        function toggleMapList() {
+            document.querySelector('.sidebar-map').classList.toggle('open');
+        }
 
         function loadData() {
-            const grid = document.getElementById('mainGrid');
-            const loader = document.getElementById('loader');
-            grid.innerHTML = "";
-            loader.style.display = "block";
-            
-            Papa.parse(csvUrl + "&cache=" + new Date().getTime(), {
-                download: true, header: true, skipEmptyLines: true,
-                complete: function(results) {
-                    render(results.data.reverse()); // Lo más nuevo primero
-                    loader.style.display = "none";
+            Papa.parse(CSV_URL, {
+                download: true, header: true,
+                complete: function(res) {
+                    allData = res.data.filter(r => r['Marca temporal']);
+                    renderAll();
                 }
             });
         }
 
-        function render(data) {
-            const grid = document.getElementById('mainGrid');
+        function renderAll() {
+            renderBonificaciones();
+            renderListado(allData);
+            if(map) renderMapa();
+        }
+
+        function renderBonificaciones() {
+            const container = document.getElementById('comisionesContainer');
+            container.innerHTML = '';
+            const impulsores = ["Josue Jimarez", "Marco Hernandez"]; // Ajustar si cambian los nombres
             
-            estructura.forEach((col, index) => {
-                const cardId = `card-${index}`;
-                let card = document.createElement('div');
-                card.className = 'card';
-                
-                let pHTML = ""; let hHTML = "";
-                let pCount = 0; let hCount = 0;
-
-                data.forEach(row => {
-                    const rowClean = {};
-                    Object.keys(row).forEach(k => rowClean[k.trim().toUpperCase()] = row[k]);
-
-                    let tarea = rowClean[col.t.toUpperCase()];
-                    let estatus = (rowClean[col.s.toUpperCase()] || "").trim().toUpperCase();
-
-                    if (tarea && tarea.trim().length > 0) {
-                        const okTerms = ["LISTO", "OK", "CUMPLIDO", "HECHO", "TERMINADO", "X"];
-                        let isDone = okTerms.includes(estatus);
-                        
-                        let itemHTML = `
-                            <div class="task ${isDone ? 'done' : ''}">
-                                <span class="task-text">${tarea}</span>
-                                <span class="badge ${isDone ? 'badge-done' : 'badge-pending'}">
-                                    ${isDone ? '✓ ' + (estatus || 'TERMINADO') : '⏳ PENDIENTE'}
-                                </span>
-                            </div>`;
-
-                        if(isDone) { hHTML += itemHTML; hCount++; }
-                        else { pHTML += itemHTML; pCount++; }
-                    }
-                });
-
-                card.innerHTML = `
-                    <div class="card-header">${col.icon} ${col.t}</div>
-                    <div class="tab-bar">
-                        <button class="tab-btn active" onclick="switchTab(this, '${cardId}-p')">PENDIENTES (${pCount})</button>
-                        <button class="tab-btn" onclick="switchTab(this, '${cardId}-h')">HISTORIAL (${hCount})</button>
-                    </div>
-                    <div id="${cardId}-p" class="content">${pHTML || '<p style="color:#bdc3c7;text-align:center;font-size:0.8rem;padding-top:20px;">Sin pendientes</p>'}</div>
-                    <div id="${cardId}-h" class="content" style="display:none;">${hHTML || '<p style="color:#bdc3c7;text-align:center;font-size:0.8rem;padding-top:20px;">Sin historial</p>'}</div>
-                `;
-                
-                grid.appendChild(card);
+            impulsores.forEach(imp => {
+                const total = allData.filter(r => getVal(r, "Impulsor").includes(imp)).length;
+                container.innerHTML += `
+                    <div class="bg-white p-6 border-l-[10px] border-rojo rounded-2xl shadow-xl flex justify-between items-center">
+                        <div>
+                            <p class="text-xs text-slate-500 font-bold uppercase">ROAD MASTER PRO</p>
+                            <p class="text-xl font-black text-black">${imp}</p>
+                            <p class="text-3xl font-black text-emerald-600 mt-1">$${total * 25}</p>
+                        </div>
+                        <div class="text-center">
+                            <div class="bg-black text-white text-3xl font-black p-4 rounded-full w-16 h-16 flex items-center justify-center">${total}</div>
+                            <p class="text-[10px] font-bold mt-2">VISITAS</p>
+                        </div>
+                    </div>`;
             });
         }
 
-        function switchTab(btn, contentId) {
-            const card = btn.closest('.card');
-            card.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            card.querySelectorAll('.content').forEach(c => c.style.display = 'none');
-            btn.classList.add('active');
-            document.getElementById(contentId).style.display = 'block';
+        function renderListado(data) {
+            const tbody = document.getElementById('tableBody');
+            tbody.innerHTML = '';
+            data.forEach((row, idx) => {
+                const tr = document.createElement('tr');
+                tr.className = "border-b hover:bg-red-50 cursor-pointer font-bold";
+                tr.onclick = () => showDetail(allData.indexOf(row));
+                tr.innerHTML = `
+                    <td class="p-3 text-black">${getVal(row, "Razón Social")}</td>
+                    <td class="p-3 text-slate-500">${getVal(row, "Impulsor")}</td>
+                    <td class="p-3 text-slate-500">${getVal(row, "Zona")}</td>
+                    <td class="p-3"><span class="bg-black text-white px-2 py-1 rounded text-[10px]">${getVal(row, "interés")}</span></td>
+                `;
+                tbody.appendChild(tr);
+            });
         }
 
+        function filterTable() {
+            const term = document.getElementById('searchInput').value.toLowerCase();
+            const filtered = allData.filter(r => Object.values(r).some(v => v.toString().toLowerCase().includes(term)));
+            renderListado(filtered);
+        }
+
+        function showDetail(i) {
+            const r = allData[i];
+            const content = document.getElementById('detailContent');
+            const gps = getVal(r, "Ubicación");
+            
+            const campos = [
+                "Marca temporal", "Impulsor de mercado", "Dia de visita", "Zona", 
+                "¿Le compra a la competencia (NASMAR - RIMSA)?", "Giro del cliente", 
+                "Nombre del negocio / Razón Social", "Nombre del encargado de compras / Dueño", 
+                "Teléfono", "Correo electrónico", "¿Qué marca de lubricante utiliza?", 
+                "¿Qué línea de lubricante utilizan?", "¿Contra que precio competimos, en que línea y que marca?", 
+                "En caso de ser flotilla, número aproximado de camiones.", "¿Qué nivel de interés mostró el cliente?", 
+                "Observaciones / Información adicional."
+            ];
+
+            let html = campos.map(c => `
+                <div class="field-card">
+                    <p class="text-[10px] text-slate-400 font-bold uppercase">${c}</p>
+                    <p class="text-sm font-black text-black">${getVal(r, c) || '---'}</p>
+                </div>
+            `).join('');
+
+            if(gps && gps.includes(',')) {
+                html = `<a href="https://www.google.com/maps/search/?api=1&query=${gps.trim()}" target="_blank" class="btn-google-maps"><i class="fas fa-location-arrow"></i> IR A LA FLOTA (GPS)</a>` + html;
+            }
+            
+            content.innerHTML = html;
+            document.getElementById('detailPanel').classList.add('panel-open');
+        }
+
+        function initMap() {
+            map = L.map('map', {zoomControl: false}).setView([20.08, -98.37], 11);
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png').addTo(map);
+            markersLayer = L.layerGroup().addTo(map);
+            renderMapa();
+        }
+
+        function renderMapa() {
+            markersLayer.clearLayers();
+            const sidebar = document.getElementById('mapListContainer');
+            sidebar.innerHTML = '<div class="p-4 bg-black text-white font-black text-center text-xs">RUTA ROAD MASTER</div>';
+            
+            allData.forEach(row => {
+                const gps = getVal(row, "Ubicación");
+                const coords = parseGPS(gps);
+                const nombre = getVal(row, "Razón Social");
+                
+                if(coords) {
+                    L.circleMarker(coords, { radius: 9, fillColor: "#e11d48", color: "#fff", weight: 2, fillOpacity: 1 })
+                    .addTo(markersLayer)
+                    .bindPopup(`<b class="uppercase text-xs">${nombre}</b><br><button onclick="window.open('https://www.google.com/maps/search/?api=1&query=${gps.trim()}')" class="mt-2 bg-black text-white p-1 text-[10px] w-full">IR AHORA</button>`);
+                }
+
+                sidebar.innerHTML += `
+                    <div class="p-3 border-b hover:bg-slate-100 cursor-pointer" onclick="focusOnMap('${gps}')">
+                        <p class="text-[11px] font-black uppercase">${nombre}</p>
+                        <p class="text-[9px] text-slate-500">${getVal(row, "Zona")}</p>
+                    </div>`;
+            });
+        }
+
+        function focusOnMap(gps) {
+            const coords = parseGPS(gps);
+            if(coords) {
+                map.flyTo(coords, 16);
+                if(window.innerWidth <= 768) toggleMapList();
+            }
+        }
+
+        function closeDetail() { document.getElementById('detailPanel').classList.remove('panel-open'); }
         window.onload = loadData;
     </script>
 </body>
